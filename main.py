@@ -21,3 +21,23 @@ sel = X[rand_indices[0:100], :]
 
 #display data
 displaydata(sel)
+
+wait = input("Program paused. Press enter to continue \n")
+
+print('Testing lrCostFunction() with regularization')
+
+theta_t = np.reshape(np.array([-2, -1, 1, 2]),[4,1])
+X_t=np.ones([5,4])
+X_t[:,1:]=np.transpose(np.reshape(np.arange(1,16),[3,5])/10)
+y_t = np.reshape(np.array([1,0,1,0,1]),[5,1])
+lambda_t = 3
+(J, grad) = lrCostFunctionReg(theta_t, X_t, y_t, lambda_t)
+
+print('Cost: {}\n'.format(J))
+print('Expected cost: 2.534819\n')
+print('Gradients:\n')
+print(grad)
+print('Expected gradients:\n')
+print(' 0.146561\n -0.548558\n 0.724722\n 1.398003\n')
+
+wait = input("Program paused. Press enter to continue \n")
