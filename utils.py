@@ -9,6 +9,7 @@ Created on Mon Apr 20 11:38:13 2020
 import math
 import numpy as np
 from matplotlib import pyplot as plt 
+from scipy.optimize import minimize
 
 def displaydata(X,**kwargs):
 
@@ -82,3 +83,34 @@ def lrCostFunctionReg(theta, X, y, L):
     grad+=L*theta2/m
     
     return (J,grad)
+
+def oneVsAll(X, y, num_labels, L):
+    (m,n)=np.shape(X)
+    all_theta=np.zeros([num_labels,n+1])
+    # Add ones to training set for the intercept term
+    X=np.column_stack((np.ones([m,]),X)) 
+    
+    #Set Initial theta
+    initial_theta = np.zeros([n + 1, 1])
+
+    for c in range(num_labels):      
+        res=minimize(lambda t : lrCostFunctionReg(t,X,(y==c+1).astype(float),L)[0],
+                     np.ndarray.flatten(initial_theta),
+                     jac=lambda t : np.ndarray.flatten(lrCostFunctionReg(t,X,(y==c+1).astype(float),L)[1]),
+                     options={'disp':True})
+         
+        theta=res.x
+        all_theta[c,:]=np.reshape(theta,[n+1])
+
+    return all_theta
+
+def predictOneVsAll(all_theta,X):
+    m=len(X)
+    p=np.zeros([m,1])
+    X=np.column_stack((np.ones([m,]),X)) 
+    reg=np.matmul(X,np.transpose(all_theta))
+
+    p=np.argmax(reg,axis=1)
+    
+    return p
+    

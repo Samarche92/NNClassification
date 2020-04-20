@@ -14,6 +14,7 @@ from utils import *
 X=np.loadtxt("data.txt",delimiter='\t') 
 y=np.loadtxt("labels.txt",delimiter='\t')
 m=len(X) #number of training examples
+y=np.reshape(y,[m,1])
 
 # Randomly select 100 data points to display
 rand_indices = np.random.permutation(np.arange(m))
@@ -41,3 +42,14 @@ print('Expected gradients:\n')
 print(' 0.146561\n -0.548558\n 0.724722\n 1.398003\n')
 
 wait = input("Program paused. Press enter to continue \n")
+
+print('Training One-vs-All Logistic Regression...\n')
+
+L = 0.1
+all_theta = oneVsAll(X, y,10,L)
+
+wait = input("Program paused. Press enter to continue \n")
+
+pred=predictOneVsAll(all_theta,X)
+
+print('Training Set Accuracy: {}\n'.format(np.mean((pred == y).astype(float))*100))
