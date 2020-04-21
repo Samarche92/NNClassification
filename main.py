@@ -52,6 +52,6 @@ all_theta = one.oneVsAll(X, y,10,L,lr.CostFunctionReg)
 
 wait = input("Program paused. Press enter to continue \n")
 
-pred=one.predictOneVsAll(all_theta,X,lr.CostFunctionReg)
+pred=one.predictOneVsAll(all_theta,X)
 
 print('Training Set Accuracy: {}\n'.format(np.mean((pred == y).astype(float))*100))
