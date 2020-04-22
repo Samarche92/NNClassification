@@ -8,6 +8,7 @@ Created on Tue Apr 21 14:28:02 2020
 
 import numpy as np
 import math
+import sys
 
 def fmincg(f, X, **options):
     """ 
@@ -47,20 +48,27 @@ def fmincg(f, X, **options):
     RHO = 0.01      # RHO and SIG are the constants in the Wolfe-Powell conditions
     SIG = 0.5       
     INT = 0.1    # don't reevaluate within INT of the limit of the current bracket
-    EXT = 3.0       # extrapolate maximum EXT times the current bracket
+    EXT = 3       # extrapolate maximum EXT times the current bracket
     MAX = 20        # max function evaluations per line search
     RATIO = 100
     
+#    if max(np.shape(length))==2:
+#        red=length[1]
+#        length=length[0]
+#    else:
+#        red=1
+    red=1
+        
     i = 0     # zero the run length counter
-    ls_failed = 0   # no previous line search has failed
-    fX = []
+    ls_failed = False   # no previous line search has failed
+    fX = np.array([])
     
     # get function value and gradient
     (f1,df1)=f(X)
+    df1=np.ndarray.flatten(df1)
     i += int(length<0)       # count epochs?!
     s = -df1       # search direction is steepest
     d1=-np.dot(s,s) #this is the slope  
-    red=1.0
     z1 = red/(1.0-d1)    # initial step is red/(|s|+1)
     
     while i<abs(length): #while not finished
@@ -70,8 +78,9 @@ def fmincg(f, X, **options):
         f0=f1
         df0=df1
         #begin line search
-        X=X+z1*s
+        X+=z1*s
         (f2,df2)=f(X)
+        df2=np.ndarray.flatten(df2)
         i += int(length<0)       # count epochs?!
         d2= np.dot(df2,s)
         #initialize point 3 equal to point 1
@@ -86,14 +95,14 @@ def fmincg(f, X, **options):
         success=False
         limit=-1
         
-        while 1:
+        while True:
             while ((f2>f1+z1*RHO*d1) or ((d2>-SIG*d1) and (M>0))):
                 limit=z1 #tighten the bracket
                 if f2>f1:
                     z2=z3-0.5*d3*z3*z3/(d3*z3+f2-f3) #quadratic fit
                 else:
-                    A=6.0*(f2-f3)/z3+3.0*(d2+d3) #cubic fit
-                    B=3.0*(f3-f2)-z3*(d3+2.0*d2)
+                    A=6*(f2-f3)/z3+3*(d2+d3) #cubic fit
+                    B=3*(f3-f2)-z3*(d3+2*d2)
                     z2=(math.sqrt(B*B-A*d2*z3*z3)-B)/A
                 
                 if math.isnan(z2) or math.isinf(z2): #if numerical problem then bisect
@@ -104,23 +113,24 @@ def fmincg(f, X, **options):
                 z1+=z2 
                 X+=z2*s
                 (f2,df2)=f(X)
+                df2=np.ndarray.flatten(df2)
                 M-=1
                 i += int(length<0)       # count epochs?!
                 d2=np.dot(df2,s)
                 z3-=z2 #z3 is now relative to the location of z2
             
-            if f2>f1+z1*RHO*d1 or d2>-SIG*d1:
-                break
-            elif d2>SIG*d1:
+            if f2>f1+z1*RHO*d1 or d2>-SIG*d1: #failure
+                break 
+            elif d2>SIG*d1: #success
                 success=True
                 break
-            elif M==0:
+            elif M==0: #failure
                 break
             
-            A=6.0*(f2-f3)/z3+3.0*(d2+d3) #make cubic extrapolation
-            B=3.0*(f3-f2)-z3*(d3+2.0*d2)
-            z2=-d2*z2*z3/(B+math.sqrt(B*B-A*d2*z3*z3))
-            if (not z2*z2>=0) or math.isnan(z2) or math.isinf(z2) or z2<0:
+            A=6*(f2-f3)/z3+3*(d2+d3) #make cubic extrapolation
+            B=3*(f3-f2)-z3*(d3+2*d2)
+            z2=-d2*z3*z3/(B+pow(B*B-A*d2*z3*z3,0.5))
+            if (not np.isreal(z2)) or math.isnan(z2) or math.isinf(z2) or z2<0:
                 #num problem or wrong sign
                 if limit<-0.5: #if no upper limit
                     z2=z1*(EXT-1) #extrapolate max amount
@@ -143,6 +153,7 @@ def fmincg(f, X, **options):
             z1+=z2
             X+=z2*s
             (f2,df2)=f(X)
+            df2=np.ndarray.flatten(df2)
             M-=1
             i += int(length<0)       # count epochs?!
             d2=np.dot(df2,s)
@@ -150,9 +161,11 @@ def fmincg(f, X, **options):
     
         if success:
             f1=f2
-            fX.append(f1)
-            print('Iteration {} | Cost: {} \n'.format(i,f1))
-            s=(np.dot(df2,df2)-np.dot(df1,df2))/(np.dot(df1,df1)*s)-df2 #Polack-Ribiere direction
+            if np.size(fX)==0:
+                fX=np.array(f1)
+            else:
+                fX=np.transpose(np.column_stack((np.transpose(fX),f1)))
+            s=(np.dot(df2,df2)-np.dot(df1,df2))/np.dot(df1,df1)*s-df2 #Polack-Ribiere direction
             df1,df2=df2,df1 #swap derivatives
             d2=np.dot(df1,s)
             if d2>0: #new slope must be negative
@@ -168,6 +181,7 @@ def fmincg(f, X, **options):
             df1=df0
             if ls_failed or i>abs(length): 
                 #line search failed twice in a row or we ran out of time
+                print('Giving up')
                 break #so give up
             #swap derivatives
             df1,df2=df2,df1
@@ -175,6 +189,7 @@ def fmincg(f, X, **options):
             #try steepest
             d1=-np.dot(s,s)
             z1=1.0/(1-d1)
-            ls_failed=True          
+            ls_failed=True   
+    print('Iteration {} | Cost: {} \n'.format(i,f1))
     
     return (X,fX,i)

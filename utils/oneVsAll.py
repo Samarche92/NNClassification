@@ -16,19 +16,19 @@ def oneVsAll(X, y, num_labels, L, cost_function):
     X=np.column_stack((np.ones([m,]),X)) 
     
     #Set Initial theta
-    initial_theta = np.zeros([n + 1, 1])
-    options={'MaxIter':50}
+    initial_theta = np.zeros([n + 1,])
 
     for c in range(num_labels):      
         #res=minimize(lambda t : cost_function(t,X,(y==c+1).astype(float),L)[0],
          #            np.ndarray.flatten(initial_theta),
           #           jac=lambda t : np.ndarray.flatten(cost_function(t,X,(y==c+1).astype(float),L)[1]),
-           #          options={'disp':True})
-           
-        res=fmincg(lambda t : cost_function(t,X,(y==c+1).astype(float),L),
-                   initial_theta,MaxIter=50)
+           #          options={'disp':True,'maxiter':50})
+
+        res=fmincg(lambda t : cost_function(t,X,(y==c+1).astype(float),L),initial_theta,
+                   MaxIter=50)
          
         theta=res[0]
+        #theta=res.x
         all_theta[c,:]=np.reshape(theta,[n+1])
 
     return all_theta
@@ -40,5 +40,6 @@ def predictOneVsAll(all_theta,X):
     reg=np.matmul(X,np.transpose(all_theta))
 
     p=np.argmax(reg,axis=1)
+    p+=np.ones_like(p)
     
     return p

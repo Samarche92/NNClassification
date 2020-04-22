@@ -54,4 +54,4 @@ wait = input("Program paused. Press enter to continue \n")
 
 pred=one.predictOneVsAll(all_theta,X)
 
-print('Training Set Accuracy: {}\n'.format(np.mean((pred == y).astype(float))*100))
+print('Training Set Accuracy: {}\n'.format(np.mean((np.ndarray.flatten(pred) == np.ndarray.flatten(y)).astype(float))*100))
