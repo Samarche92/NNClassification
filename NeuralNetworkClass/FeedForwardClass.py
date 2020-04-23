@@ -32,6 +32,8 @@ class FeedForward(NeuralNetwork):
                              .format(self.layers-2,len(A)))
             
         for (i,a) in enumerate(A):
+            if not isinstance(a,int):
+                raise ValueError("input value should be an integer!")
             self.hidden_nodes[i]=a
             
     def InitializeWeights(self,W):
