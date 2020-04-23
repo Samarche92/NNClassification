@@ -6,7 +6,7 @@ Created on Tue Apr 21 10:18:09 2020
 @author: samar
 """
 import numpy as np
-from scipy.optimize import minimize
+#from scipy.optimize import minimize
 from .fmincg import fmincg
 
 def oneVsAll(X, y, num_labels, L, cost_function):
