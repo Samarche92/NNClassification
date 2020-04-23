@@ -7,7 +7,7 @@ Created on Thu Apr 23 12:02:30 2020
 """
 
 import unittest
-from .FeedForwardClass import FeedForward
+from FeedForwardClass import FeedForward
 
 class FeedForwardTest(unittest.TestCase):
     

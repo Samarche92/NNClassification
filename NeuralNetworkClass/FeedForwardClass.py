@@ -6,7 +6,7 @@ Created on Thu Apr 23 11:25:52 2020
 @author: samar
 """
 import numpy as np
-from .NeuralNetworkClass import NeuralNetwork
+from NeuralNetworkClass import NeuralNetwork
 
 class FeedForward(NeuralNetwork):
     """ Feed-forward neural networks used for classification. Inherits from 
