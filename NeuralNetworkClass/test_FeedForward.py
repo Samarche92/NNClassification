@@ -28,3 +28,4 @@ class FeedForwardTest(unittest.TestCase):
             
         FF.AddHiddenNodes(A)
         self.assertEqual(FF.hidden_nodes,A)
+        
